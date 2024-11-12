@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>サラン</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+    .container {
+      width: 100%;
+      max-width: 600px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      font-size: 1.5em;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .total-amount {
+      text-align: center;
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .log-box {
+      background-color: #f0f0f0;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 0.9em;
+    }
+    .search-bar {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 8px;
+      font-size: 1em;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .menu-category {
+      margin-bottom: 20px;
+    }
+    .category-title {
+      font-weight: bold;
+      font-size: 1.2em;
+      margin: 15px 0;
+      color: #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .menu-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .menu-item span {
+      font-size: 0.9em;
+    }
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .quantity-control button {
+      width: 30px;
+      height: 30px;
+      font-size: 1.2em;
+      border-radius: 5px;
+      border: none;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .quantity-control button:hover {
+      background-color: #ddd;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- 총합계 금액 -->
+  <div class="total-amount">
+    총 합계: <span id="total-amount">0 円</span>
+  </div>
+
+  <!-- 로그 박스 -->
+  <div class="log-box" id="logBox">
+    <!-- 선택된 메뉴 로그가 여기에 표시됩니다 -->
+  </div>
+
+  <!-- 검색창 -->
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="메뉴 검색..." onkeyup="searchMenu()">
+  </div>
+
+  <!-- 메뉴 항목들 -->
+  <div id="menuContainer">
+    <!-- 메뉴 항목은 JavaScript에서 생성 -->
+  </div>
+</div>
+
+<script>
+  const menuData = {
+    "お通し": [{ name: "お通し(お一人様)", price: 200 }],
+    "주류": [
+      { name: "飲み放題(2시간)", price: 2530 },
+      { name: "生ビール", price: 660 },
+      { name: "병맥주", price: 770 },
+      { name: "논알콜맥주", price: 660 }
+    ],
+    "소프트 드링크": [
+      { name: "전 메뉴", price: 440 },
+    ],
+    "안주류": [
+      { name: "상추 샐러드", price: 770 },
+      { name: "김치모듬", price: 1100 },
+      { name: "나물모듬", price: 880 },
+      { name: "잡채", price: 1320 },
+      { name: "계란찜", price: 880 },
+      { name: "오징어볶음", price: 1430 },
+    ],
+    "찌개류": [
+      { name: "오뎅탕", price: 1320 },
+      { name: "칼국수", price: 1210 },
+      { name: "된장찌개", price: 1320 },
+      { name: "참치 김치찌개", price: 1430 },
+      { name: "김치찌개", price: 1540 },
+      { name: "순두부(해물/돼지고기)", price: 1320 },
+      { name: "설렁탕", price: 1430 },
+      { name: "소고기국밥", price: 1320 },
+      { name: "닭볶음탕", price: 610 },
+      { name: "감자탕", price: 1980 },
+      { name: "삼계탕", price: 2750 },
+    ],
+    "밥류": [
+      { name: "야채비빔밥", price: 1210 },
+      { name: "돌솥비빔밥", price: 1210 },
+      { name: "오징어 돌솥비빔밥", price: 1430 },
+      { name: "공기밥", price: 250 },
+    ],
+    "면류": [
+      { name: "냉면", price: 1100 },
+      { name: "비빔국수", price: 1210 },
+    ],
+    "김밥류": [
+      { name: "김밥", price: 1210 },
+      { name: "불고기김밥", price: 1320 },
+      { name: "창자김밥", price: 1210 },
+      { name: "매운치즈김밥", price: 1320 },
+    ],
+    "전류": [
+      { name: "김치전", price: 1320 },
+      { name: "김치 치즈전", price: 1430 },
+      { name: "감자전", price: 880 },
+      { name: "해물파전", price: 1650 },
+    ],
+    "고기류(삼겹살)": [
+      { name: "삼겹살 디럭스코스(2인 이상)", price: 4400 },
+      { name: "삼겹살 A코스(2인 이상))", price: 2970 },
+      { name: "삼겹살(2인 이상)", price: 1650 },
+      { name: "고기추가", price: 880 },
+      { name: "상추/마늘/청양고추 추가", price: 330 },
+    ],
+    "고기류(닭고기)": [
+      { name: "치즈 닭갈비", price: 1540 },
+      { name: "치즈 추가", price: 330 },
+      { name: "닭강정", price: 1650 },
+    ],
+    "고기류(기타)": [
+      { name: "LA갈비", price: 2200 },
+      { name: "족발", price: 2200 },
+      { name: "제육볶음", price: 1320 },
+      { name: "오삼불고기", price: 1650 },
+      { name: "순대", price: 1320 },
+      { name: "불고기", price: 1430 },
+    ],
+    "떡볶이류": [
+      { name: "떡볶이", price: 1100 },
+      { name: "치즈 떡볶이", price: 1210 },
+      { name: "라볶이", price: 1210 },
+      { name: "치즈 라볶이", price: 1320 },
+      { name: "기름 떡볶이", price: 990 },
+      { name: "불고기 떡볶이", price: 1320 }
+    ],
+  };
+
+  window.onload = function() {
+    const menuContainer = document.getElementById("menuContainer");
+
+    for (const category in menuData) {
+      const categoryDiv = document.createElement("div");
+      categoryDiv.classList.add("menu-category");
+
+      const categoryTitle = document.createElement("div");
+      categoryTitle.classList.add("category-title");
+      categoryTitle.innerText = category;
+
+      // Toggle Button
+      const toggleButton = document.createElement("button");
+      categoryDiv.appendChild(categoryTitle);
+
+      menuData[category].forEach(item => {
+        const menuItem = document.createElement("div");
+        menuItem.classList.add("menu-item");
+        menuItem.setAttribute("data-name", item.name);
+
+        const itemName = document.createElement("span");
+        itemName.innerText = `${item.name} - ${item.price}円`;
+        menuItem.appendChild(itemName);
+
+        const quantityControl = document.createElement("div");
+        quantityControl.classList.add("quantity-control");
+
+        const decreaseButton = document.createElement("button");
+        decreaseButton.innerText = "-";
+        decreaseButton.onclick = () => updateQuantity(item.name, -1, item.price, category);
+
+        const quantityDisplay = document.createElement("span");
+        quantityDisplay.id = `${item.name}-quantity`;
+        quantityDisplay.innerText = "0";
+
+        const increaseButton = document.createElement("button");
+        increaseButton.innerText = "+";
+        increaseButton.onclick = () => updateQuantity(item.name, 1, item.price, category);
+
+        quantityControl.appendChild(decreaseButton);
+        quantityControl.appendChild(quantityDisplay);
+        quantityControl.appendChild(increaseButton);
+        
+        menuItem.appendChild(quantityControl);
+
+        const itemTotal = document.createElement("span");
+        itemTotal.id = `${item.name}-total`;
+        itemTotal.innerText = "0 円";
+        menuItem.appendChild(itemTotal);
+
+        categoryDiv.appendChild(menuItem);
+      });
+
+      menuContainer.appendChild(categoryDiv);
+    }
+  };
+
+  function toggleMenuItems(categoryDiv, button) {
+    const isHidden = categoryDiv.classList.toggle("hidden");
+    button.innerText = isHidden ? "↓" : "↑";
+  }
+
+  function updateQuantity(item, change, price, category) {
+    const quantityElem = document.getElementById(`${item}-quantity`);
+    const totalElem = document.getElementById(`${item}-total`);
+
+    let quantity = parseInt(quantityElem.innerText) + change;
+    quantity = Math.max(quantity, 0);
+    quantityElem.innerText = quantity;
+
+    const itemTotal = quantity * price;
+    totalElem.innerText = `${itemTotal.toLocaleString()} 円`;
+
+    updateTotal();
+    updateLog(item, quantity, category);
+  }
+
+  function updateTotal() {
+    let total = 0;
+    for (const category in menuData) {
+      menuData[category].forEach(item => {
+        const quantity = parseInt(document.getElementById(`${item.name}-quantity`).innerText) || 0;
+        total += quantity * item.price;
+      });
+    }
+    document.getElementById("total-amount").innerText = `${total.toLocaleString()} 円`;
+  }
+
+  function updateLog(item, quantity, category) {
+    const logBox = document.getElementById("logBox");
+    const existingLog = document.getElementById(`${item}-log`);
+
+    if (quantity > 0) {
+      if (existingLog) {
+        existingLog.querySelector(".log-quantity").innerText = ` : ${quantity}`;
+      } else {
+        const logEntry = document.createElement("div");
+        logEntry.id = `${item}-log`;
+        logEntry.innerHTML = `${item} <span class="log-quantity"> : ${quantity}</span>`;
+
+        if (category === "소프트 드링크") {
+          const inputField = document.createElement("input");
+          inputField.type = "text";
+          inputField.placeholder = "메뉴명 입력";
+          inputField.style.marginLeft = "5px";
+          logEntry.appendChild(inputField);
+        }
+
+        logBox.appendChild(logEntry);
+      }
+    } else if (existingLog) {
+      existingLog.remove();
+    }
+  }
+
+  function searchMenu() {
+    const searchValue = document.getElementById("searchInput").value.toLowerCase();
+    const menuItems = document.querySelectorAll(".menu-item");
+
+    menuItems.forEach(item => {
+      const itemName = item.getAttribute("data-name").toLowerCase();
+      item.style.display = itemName.includes(searchValue) ? "" : "none";
+    });
+  }
+</script>
+
+</body>
+</html>
